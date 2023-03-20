@@ -44,17 +44,40 @@ module.exports.updatePost = async (req, res) => {
 };
 
 module.exports.deletePost = async (req, res) => {
+  if (!ObjectID.isValid(req.params.id)) return res.status(400).send("ID unknown : " + req.params.id);
+
+  try {
+    await PostModel.findByIdAndRemove(req.params.id).exec();
+    res.status(200).json({ message: "Successfully deleted." });
+  } catch (err) {
+    console.log("Delete Error : " + err);
+    return res.status(500).json({ message: err });
+  }
+};
+
+module.exports.likePost = async (req, res) => { 
     if (!ObjectID.isValid(req.params.id)) return res.status(400).send("ID unknown : " + req.params.id);
-
-
+    
     try {
-        await PostModel.findByIdAndRemove(req.params.id).exec();
-        res.status(200).json({ message: "Successfully deleted." });
-    }
-    catch (err) {
-        console.log("Delete Error : " + err)
+        const post = await PostModel.findById(req.params.id);
+
+        if (!post) return res.status(404).send("Post not found");
+
+        if (post.likers.includes(req.body.id)) 
+        return res.status(400).send("You already liked this post");
+
+        await post.updateOne({ $push: { likers: req.body.id } });
+        res.status(200).json({ message: "The post has been liked" });
+
+        await UserModel.findByIdAndUpdate(req.body.id, { $push: { likes: req.params.id } });
+
+    } catch (err) {
+        console.log("Like Error : " + err);
         return res.status(500).json({ message: err });
     }
 
+}
 
-};
+module.exports.unlikePost = async (req, res) => {
+
+}
