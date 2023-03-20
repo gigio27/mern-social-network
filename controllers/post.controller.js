@@ -63,8 +63,8 @@ module.exports.likePost = async (req, res) => {
 
         if (!post) return res.status(404).send("Post not found");
 
-        if (post.likers.includes(req.body.id)) 
-        return res.status(400).send("You already liked this post");
+        // if (post.likers.includes(req.body.id)) 
+        // return res.status(400).send("You already liked this post");
 
         await post.updateOne({ $push: { likers: req.body.id } });
         res.status(200).json({ message: "The post has been liked" });
