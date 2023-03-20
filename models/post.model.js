@@ -6,6 +6,11 @@ const PostSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        likers: {
+            type: [String],
+            required: true,
+            // default: [],
+        },
         message: {
             type: String,
             trim: true,
@@ -16,11 +21,6 @@ const PostSchema = new mongoose.Schema(
         },
         video: {
             type: String,
-        },
-        likers: {
-            type: [String],
-            required: true,
-            // default: [],
         },
         comments: {
             type: [
