@@ -55,47 +55,72 @@ module.exports.deletePost = async (req, res) => {
   }
 };
 
-module.exports.likePost = async (req, res) => { 
-    if (!ObjectID.isValid(req.params.id)) return res.status(400).send("ID unknown : " + req.params.id);
-    
-    try {
-        const post = await PostModel.findById(req.params.id);
+module.exports.likePost = async (req, res) => {
+  if (!ObjectID.isValid(req.params.id)) return res.status(400).send("ID unknown : " + req.params.id);
 
-        if (!post) return res.status(404).send("Post not found");
+  try {
+    const post = await PostModel.findById(req.params.id);
 
-        // if (post.likers.includes(req.body.id)) 
-        // return res.status(400).send("You already liked this post");
+    if (!post) return res.status(404).send("Post not found");
 
-        await post.updateOne({ $push: { likers: req.body.id } });
-        res.status(200).json({ message: "The post has been liked" });
+    // if (post.likers.includes(req.body.id))
+    // return res.status(400).send("You already liked this post");
 
-        await UserModel.findByIdAndUpdate(req.body.id, { $push: { likes: req.params.id } });
+    await post.updateOne({ $push: { likers: req.body.id } });
+    res.status(200).json({ message: "The post has been liked" });
 
-    } catch (err) {
-        console.log("Like Error : " + err);
-        return res.status(500).json({ message: err });
-    }
-
-}
+    await UserModel.findByIdAndUpdate(req.body.id, { $push: { likes: req.params.id } });
+  } catch (err) {
+    console.log("Like Error : " + err);
+    return res.status(500).json({ message: err });
+  }
+};
 
 module.exports.unlikePost = async (req, res) => {
-    if (!ObjectID.isValid(req.params.id)) return res.status(400).send("ID unknown : " + req.params.id);
-    
-    try {
-        const post = await PostModel.findById(req.params.id);
+  if (!ObjectID.isValid(req.params.id)) return res.status(400).send("ID unknown : " + req.params.id);
 
-        if (!post) return res.status(404).send("Post not found");
+  try {
+    const post = await PostModel.findById(req.params.id);
 
-    
+    if (!post) return res.status(404).send("Post not found");
 
-        await post.updateOne({ $pull: { likers: req.body.id } });
-        res.status(200).json({ message: "The post has been unliked" });
+    await post.updateOne({ $pull: { likers: req.body.id } });
+    res.status(200).json({ message: "The post has been unliked" });
 
-        await UserModel.findByIdAndUpdate(req.body.id, { $pull: { likes: req.params.id } });
+    await UserModel.findByIdAndUpdate(req.body.id, { $pull: { likes: req.params.id } });
+  } catch (err) {
+    console.log("Like Error : " + err);
+    return res.status(500).json({ message: err });
+  }
+};
 
-    } catch (err) {
-        console.log("Like Error : " + err);
-        return res.status(500).json({ message: err });
+module.exports.commentPost = async (req, res) => {
+  if (!ObjectID.isValid(req.params.id)) return res.status(400).send("ID unknown : " + req.params.id);
+
+  try {
+    const post = await PostModel.findById(req.params.id);
+
+    await post.updateOne({
+      $push: {
+        comments: {
+          commenterId: req.body.commenterId,
+          commenterPseudo: req.body.commenterPseudo,
+          text: req.body.text,
+          timestamp: new Date().getTime(),
+        },
+      },
+    });
+    res.status(200).json({ message: "You have commented the post" });
+    (err, docs) => {
+      if (!err) res.send(docs);
+      else return res.status(400).send(err);
     }
+    
+  } catch (err) {
+    console.log("Comment Error : " + err);
+    return res.status(400).send(err);
+  }
+};
 
-}
+module.exports.editCommentPost = async (req, res) => {};
+module.exports.deleteCommentPost = async (req, res) => {};
